@@ -1,21 +1,30 @@
 import torch
 import torchvision
 from torchvision import datasets, transforms, ops, models
-import matplotlib.pyplot as plt
 import copy
 import os
 from torch.utils.data import Dataset
 from tqdm import tqdm
 import pickle
 from typing import Tuple, Dict
+from torch.utils.data import default_collate
+from torchvision.transforms import v2
+
+NUM_CLASSES = 10
+mixup = v2.MixUp(num_classes=NUM_CLASSES)
+
+
+def collate_fn(batch):
+    return mixup(*default_collate(batch))
 
 
 def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, batch_sizes: Tuple[int],
                    NAME_OF_MODEL: str = "test_model", folder_to_save_in: str = "", NUM_OF_EPOCHS: int = 100,
-                   early_stopping_patience: int = 15, NUM_OF_WORKERS: int = 2) -> Dict[
+                   early_stopping_patience: int = 15, NUM_OF_WORKERS: int = 2, mixup=False) -> Dict[
     int, Dict[str, Dict[str, float]]]:
     """
     Train and evaluate a PyTorch model on given datasets.
+    Note: The model's layer should be frozen before calling this function.
 
     Args:
         model (torch.nn.Module): The model to train and evaluate.
@@ -32,7 +41,6 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
         Dict[int, Dict[str, Dict[str, float]]]: A dictionary containing training and testing loss and accuracy for
         different batch sizes.
 
-    The model's layer should be frozen before calling this function.
     """
     batch_tr_info = {}
     batch_te_info = {}
@@ -49,10 +57,16 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
         optimizer = torch.optim.Adam(current_model.parameters(), lr=0.001)
         loss_fn = torch.nn.CrossEntropyLoss()
 
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
-                                                  num_workers=NUM_OF_WORKERS)
-        testloader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE, shuffle=False,
-                                                 num_workers=NUM_OF_WORKERS)
+        if mixup:
+            trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
+                                                      num_workers=NUM_OF_WORKERS, collate_fn=collate_fn)
+            testloader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE, shuffle=False,
+                                                     num_workers=NUM_OF_WORKERS, collate_fn=collate_fn)
+        else:
+            trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
+                                                      num_workers=NUM_OF_WORKERS)
+            testloader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE, shuffle=False,
+                                                     num_workers=NUM_OF_WORKERS)
 
         # epoch loss and accuracy
         tr_loss, tr_acc = [], []
