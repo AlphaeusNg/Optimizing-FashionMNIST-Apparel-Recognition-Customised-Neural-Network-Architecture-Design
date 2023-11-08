@@ -84,7 +84,10 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
                 y = y.to(device)
                 predicted = current_model(X)
                 loss = loss_fn(predicted, y)
-                batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(y).sum().item() / len(y)))
+                if mixup:
+                    batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(torch.argmax(y, dim=1)).sum().item() / len(y)))
+                else:
+                    batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(y).sum().item() / len(y)))
                 batch_loss.append(float(loss.item()))
 
                 optimizer.zero_grad()
@@ -104,7 +107,10 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
                     y = y.to(device)
                     predicted = current_model(X)
                     loss = loss_fn(predicted, y)
-                    batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(y).sum().item() / len(y)))
+                    if mixup:
+                        batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(torch.argmax(y, dim=1)).sum().item() / len(y)))
+                    else:
+                        batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(y).sum().item() / len(y)))
                     batch_loss.append(float(loss.item()))
 
                 batches = len(batch_loss)
