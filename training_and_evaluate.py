@@ -101,8 +101,9 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
 
             if not os.path.exists(model_weights_dir):
                 os.makedirs(model_weights_dir)
-                # Save the current_model's weights after each epoch
-                torch.save(current_model.state_dict(), f"{model_weights_dir}/{BATCH_SIZE}_model_weights.pth")
+
+            # Save the current_model's weights after each epoch
+            torch.save(current_model.state_dict(), f"{model_weights_dir}/{BATCH_SIZE}_model_weights.pth")
 
             # Check if the current test loss is the best so far
             if te_loss[-1] < best_test_loss:
