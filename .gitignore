@@ -1,5 +1,13 @@
-.venv*
-.idea*
-data/*
-data_original/*
+# Python virtual environments
+.venv
 venv
+
+# IDE
+.idea
+
+# Jupyter
+.jupyter_ystore.db
+.python-version
+
+data
+data_original
