@@ -11,7 +11,7 @@ from torch.utils.data import default_collate
 from torchvision.transforms import v2
 
 NUM_CLASSES = 10
-mixup = v2.MixUp(num_classes=NUM_CLASSES)
+mixup = v2.CutMix(num_classes=NUM_CLASSES)
 
 
 def collate_fn(batch):
@@ -61,7 +61,7 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
             trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
                                                       num_workers=NUM_OF_WORKERS, collate_fn=collate_fn)
             testloader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE, shuffle=False,
-                                                     num_workers=NUM_OF_WORKERS, collate_fn=collate_fn)
+                                                     num_workers=NUM_OF_WORKERS)
         else:
             trainloader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
                                                       num_workers=NUM_OF_WORKERS)
@@ -107,10 +107,8 @@ def train_and_eval(model: torch.nn.Module, trainset: Dataset, testset: Dataset, 
                     y = y.to(device)
                     predicted = current_model(X)
                     loss = loss_fn(predicted, y)
-                    if mixup:
-                        batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(torch.argmax(y, dim=1)).sum().item() / len(y)))
-                    else:
-                        batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(y).sum().item() / len(y)))
+
+                    batch_accuracy.append(float(torch.argmax(predicted, dim=1).eq(y).sum().item() / len(y)))
                     batch_loss.append(float(loss.item()))
 
                 batches = len(batch_loss)
