@@ -1,6 +1,7 @@
-# Python virtual environments
+# Python
 .venv
 venv
+__pycache__
 
 # IDE
 .idea
@@ -8,7 +9,8 @@ venv
 # Jupyter
 .jupyter_ystore.db
 .python-version
+.ipynb_checkpoints
 
+# Others
 data
 data_original
-__pycache__/*
